@@ -1,9 +1,10 @@
-import { ObjectId } from "mongoose";
+import { FastifyRequest } from "fastify";
+import { ObjectId, FilterQuery } from "mongoose";
 import { MUser } from "./../models/MUser.js";
-import graphqlFields from "graphql-fields";
+import { fieldsList, fieldsMap,fieldsProjection } from "graphql-fields-list";
 import { IUser } from "../types/IUsers.js";
-import pkg from "mongoose";
-const { mongo } = pkg;
+import { mongo } from "../models/DB.js";
+import { GraphQLResolveInfo } from "graphql/type/definition";
 
 /**
  * get Userss
@@ -13,7 +14,12 @@ const { mongo } = pkg;
  * @param select
  * @returns
  */
-export const getUsers = async (_: any, data: any, body: any, select: any) => {
+export const getUsers = async (
+  _: any,
+  data: any,
+  body: FastifyRequest,
+  select: any
+) => {
   let promises: Promise<any>[] = [];
   let take = select.variableValues?.take ?? 10;
   let skip = select.variableValues?.skip ?? 0;
@@ -21,74 +27,48 @@ export const getUsers = async (_: any, data: any, body: any, select: any) => {
   let order = select.variableValues?.order;
   let search = select.variableValues?.search;
 
-  const fieldList = graphqlFields(select);
-  const keys = Object.keys(fieldList.docs ?? {});
+  const fieldList = fieldsMap(select);
+  const keys: String[] =Object.keys(fieldList.docs);
+
+  const filterQueryUser: FilterQuery<IUser> = {
+    ...(search
+      ? {
+          $or: [
+            {
+              name: {
+                $regex: search,
+                $options: "i",
+              },
+            },
+            {
+              email: {
+                $regex: search,
+                $options: "i",
+              },
+            },
+          ],
+        }
+      : {}),
+  };
   if (keys.length)
     promises.push(
-      MUser.find(
-        {
-          ...(search
-            ? {
-                $or: [
-                  {
-                    name: {
-                      $regex: search,
-                      $options: "i",
-                    },
-                  },
-                  {
-                    email: {
-                      $regex: search,
-                      $options: "i",
-                    },
-                  },
-                ],
-              }
-            : {}),
-        },
-        keys.join(" "),
-        {
-          limit: take,
-          skip,
-
-          ...(sort
-            ? {
-                sort: {
-                  [sort]: order == "asc" ? 1 : -1,
-                },
-              }
-            : {}),
-        }
-      )
-        .lean()
-        .exec()
-    );
-
-  if (fieldList.count) {
-    promises.push(
-      MUser.countDocuments({
-        ...(search
+      MUser.find(filterQueryUser, keys.join(" "), {
+        limit: take,
+        skip,
+        ...(sort
           ? {
-              $or: [
-                {
-                  name: {
-                    $regex: search,
-                    $options: "i",
-                  },
-                },
-                {
-                  email: {
-                    $regex: search,
-                    $options: "i",
-                  },
-                },
-              ],
+              sort: {
+                [sort]: order == "asc" ? 1 : -1,
+              },
             }
           : {}),
       })
         .lean()
         .exec()
     );
+
+  if (fieldList.count !==undefined) {
+    promises.push(MUser.countDocuments(filterQueryUser).lean().exec());
   }
 
   const [user, count] = await Promise.all(promises);
@@ -124,7 +104,12 @@ export const upsertUser = async (
 };
 
 /**
- * @description
+ *
+ * @param _
+ * @param data
+ * @param body
+ * @param select
+ * @returns
  */
 
 export const deleteUser = async (
@@ -133,12 +118,11 @@ export const deleteUser = async (
   body: any,
   select: any
 ) => {
-  const fieldList = graphqlFields(select);
-  const keys = Object.keys(fieldList);
+  const fieldList = fieldsList(select);
 
   const user = await MUser.findOneAndDelete(
     { _id: data.input },
-    { projection: keys.join(" ") }
+    { projection: fieldList.join(" ") }
   );
   return user;
 };
@@ -151,10 +135,15 @@ export const deleteUser = async (
  * @param select
  * @returns
  */
-export const getUser = async (_: any, data: any, body: any, select: any) => {
+export const getUser = async (
+  _: any,
+  data: any,
+  body: any,
+  select: GraphQLResolveInfo
+) => {
   let id = select.variableValues.id;
-  const fieldList = graphqlFields(select);
-  const keys = Object.keys(fieldList);
-  const user = await MUser.findById(id, keys.join(" "));
+  const fieldList = fieldsList(select);
+  console.log(fieldList)
+  const user = await MUser.findById(id, fieldList.join(" "));
   return user;
 };

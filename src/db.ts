@@ -1,4 +1,6 @@
 import pkg from 'mongoose';
+import { config } from "dotenv";
+config();
 const { connection, connect } = pkg;
 connection.on("connected", function () {
   console.log("Mongoose connected to Server");

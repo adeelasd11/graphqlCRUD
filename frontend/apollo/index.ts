@@ -1,7 +1,11 @@
 import { ApolloClient, HttpLink } from "@apollo/client/core";
 import { InMemoryCache } from "@apollo/client/cache";
+import { AuthStore } from "../stores/Store";
 const httpLink = new HttpLink({
   uri: import.meta.env.VITE_APOLLO as string,
+  headers:{
+    sessionId: AuthStore.getState().sessionId,
+  }
 });
 
 export const client = new ApolloClient({
@@ -12,6 +16,11 @@ export const client = new ApolloClient({
          fields:{
           users:{
             merge(existing, incoming, { mergeObjects }) {
+              return mergeObjects(existing,incoming);
+            },
+          },
+          count:{
+            merge(existing, incoming) {
               return incoming;
             },
           }
@@ -19,4 +28,5 @@ export const client = new ApolloClient({
        },
     }
   }),
+  
 });

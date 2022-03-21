@@ -21,9 +21,17 @@ export const TypeDef = gql`
     count: Int
   }
 
+  type Clients{
+    name: String
+    id: String
+  }
+
   type Query {
+    # user Management
     users: UserResponse
     user(_id: String!): User
+    #chat
+    clients:[Clients]
   }
 
   type Mutation {

@@ -1,4 +1,5 @@
-import "./config.js";
+import { IGraphResolver } from './types/IGraphql.d';
+
 import { resolver } from "./apollo/resolver.js";
 import { TypeDef } from "./apollo/schema.js";
 import { server } from "./router.js";
@@ -6,6 +7,9 @@ import { ApolloServer } from "apollo-server-fastify";
 import { ApolloServerPluginDrainHttpServer } from "apollo-server-core";
 import { ApolloServerPlugin } from "apollo-server-plugin-base";
 import { FastifyInstance } from "fastify";
+import { Resolver } from '@apollo/client';
+
+// server.register(FastifySSEPlugin);
 
 function fastifyAppClosePlugin(app: FastifyInstance): ApolloServerPlugin {
   return {
@@ -28,10 +32,14 @@ async function startApolloServer(typeDefs: any, resolvers: any) {
       fastifyAppClosePlugin(server),
       ApolloServerPluginDrainHttpServer({ httpServer: server.server }),
     ],
+    context:({request})=>{
+      return request
+    }
   });
 
   await appolo.start();
-  server.register(appolo.createHandler());
+  // server.register(FastifyCors)
+  server.register(appolo.createHandler({ cors: true}));
 
   await server.listen(process.env.PORT ?? 4000);
   console.log(

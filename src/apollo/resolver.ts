@@ -1,3 +1,4 @@
+import { getActiveUsers } from "./../controller/eventController.js";
 import {
   upsertUser,
   deleteUser,
@@ -8,6 +9,7 @@ export const resolver = {
   Query: {
     users: getUsers,
     user: getUser,
+    clients: getActiveUsers,
     // addUser
   },
   Mutation: {

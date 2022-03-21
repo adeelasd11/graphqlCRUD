@@ -1,5 +1,5 @@
-import { FastifyReply, FastifyRequest, RequestHeadersDefault } from "fastify";
+import { FastifyReply, FastifyRequest } from "fastify";
 
-export const getHome = (req:FastifyRequest,res:FastifyReply) => {
-    res.send({ msg:"Hello World"})
+export const getHome = (req: FastifyRequest, res: FastifyReply) => {
+  res.send({ msg: "Hello World" });
 };
