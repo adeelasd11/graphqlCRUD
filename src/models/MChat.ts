@@ -2,6 +2,7 @@ import { IChat } from "./../types/IChat.d";
 import { mongoose } from "../db.js";
 import { Schema } from "./DB.js";
 import { MessageType } from "../global/messageType.js";
+import { Document } from "mongoose";
 const Chat = new mongoose.Schema({
   conversationId: {
     type: Schema.Types.ObjectId,
@@ -29,4 +30,4 @@ const Chat = new mongoose.Schema({
   },
 });
 
-export const MChat = mongoose.model<IChat>("chat", Chat);
+export const MChat = mongoose.model<Document<IChat>>("chat", Chat);

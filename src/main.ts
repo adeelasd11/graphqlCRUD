@@ -1,5 +1,3 @@
-import { IGraphResolver } from './types/IGraphql.d';
-
 import { resolver } from "./apollo/resolver.js";
 import { TypeDef } from "./apollo/schema.js";
 import { server } from "./router.js";

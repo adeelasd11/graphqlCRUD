@@ -1,34 +1,29 @@
+import { IGraphResolverQuery } from "./../types/IGraphql.d";
 import { FastifyRequest } from "fastify";
 import { ObjectId, FilterQuery } from "mongoose";
 import { MUser } from "./../models/MUser.js";
-import { fieldsList, fieldsMap,fieldsProjection } from "graphql-fields-list";
+import { fieldsList, fieldsMap, fieldsProjection } from "graphql-fields-list";
 import { IUser } from "../types/IUsers.js";
 import { mongo } from "../models/DB.js";
 import { GraphQLResolveInfo } from "graphql/type/definition";
+import { IGraphResolverMut } from "../types/IGraphql.js";
 
 /**
  * get Userss
  * @param _
- * @param data
- * @param body
  * @param select
  * @returns
  */
-export const getUsers = async (
-  _: any,
-  data: any,
-  body: FastifyRequest,
-  select: any
-) => {
+export const getUsers: IGraphResolverQuery = async (_, __, ___, select) => {
   let promises: Promise<any>[] = [];
-  let take = select.variableValues?.take ?? 10;
-  let skip = select.variableValues?.skip ?? 0;
-  let sort = select.variableValues?.sort;
-  let order = select.variableValues?.order;
-  let search = select.variableValues?.search;
+  let take = (select.variableValues?.take as number) ?? 10;
+  let skip = (select.variableValues?.skip as number) ?? 0;
+  let sort = select.variableValues?.sort as string;
+  let order = select.variableValues?.order as string;
+  let search = select.variableValues?.search as string;
 
   const fieldList = fieldsMap(select);
-  const keys: String[] =Object.keys(fieldList.docs);
+  const keys: String[] = Object.keys(fieldList.docs);
 
   const filterQueryUser: FilterQuery<IUser> = {
     ...(search
@@ -67,7 +62,7 @@ export const getUsers = async (
         .exec()
     );
 
-  if (fieldList.count !==undefined) {
+  if (fieldList.count !== undefined) {
     promises.push(MUser.countDocuments(filterQueryUser).lean().exec());
   }
 
@@ -81,16 +76,11 @@ export const getUsers = async (
 /**
  * @description Adds User
  * @param _
- * @param data
- * @param body
- * @param select
  * @returns
  */
-export const upsertUser = async (
-  _: any,
-  data: { input: IUser },
-  body: any,
-  select: any
+export const upsertUser: IGraphResolverMut<{ input: IUser }> = async (
+  _,
+  data
 ) => {
   const userData = data.input;
   const _id: any = data.input._id ?? new mongo.ObjectId();
@@ -107,16 +97,16 @@ export const upsertUser = async (
  *
  * @param _
  * @param data
- * @param body
+ * @param req
  * @param select
  * @returns
  */
 
-export const deleteUser = async (
-  _: any,
-  data: { input: number },
-  body: any,
-  select: any
+export const deleteUser: IGraphResolverMut<{ input: number }> = async (
+  _,
+  data,
+  __,
+  select
 ) => {
   const fieldList = fieldsList(select);
 
@@ -131,19 +121,13 @@ export const deleteUser = async (
  * get Userss
  * @param _
  * @param data
- * @param body
+ * @param req
  * @param select
  * @returns
  */
-export const getUser = async (
-  _: any,
-  data: any,
-  body: any,
-  select: GraphQLResolveInfo
-) => {
+export const getUser: IGraphResolverQuery = async (_, __, ___, select) => {
   let id = select.variableValues.id;
   const fieldList = fieldsList(select);
-  console.log(fieldList)
   const user = await MUser.findById(id, fieldList.join(" "));
   return user;
 };

@@ -1,3 +1,4 @@
+import { Document } from "mongoose";
 import { IUser } from "./../types/IUsers.d";
 import { mongoose } from "./../db.js";
 import { emailRegex } from "../validator/basic.js";
@@ -23,4 +24,4 @@ const UserSchema = new mongoose.Schema({
   },
 });
 
-export const MUser = mongoose.model<IUser>("users", UserSchema);
+export const MUser = mongoose.model<Document<IUser>>("users", UserSchema);

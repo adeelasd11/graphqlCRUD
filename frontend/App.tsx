@@ -12,7 +12,6 @@ function App() {
     const evtSource = new EventSource(
       `${import.meta.env.VITE_BASE as string}connect?token=${sessionId}`
     );
-
     evtSource.onopen = (e) => {
       console.info("Connected To Server!");
     };

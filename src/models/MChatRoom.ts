@@ -1,3 +1,4 @@
+import { Document } from 'mongoose';
 import { IChatRoom } from "./../types/IChatRoom.d";
 import { mongoose } from "../db.js";
 import { Schema } from "./DB.js";
@@ -19,4 +20,4 @@ const CharRoom = new mongoose.Schema({
   },
 });
 
-export const MChatRoom = mongoose.model<IChatRoom>("chatRoom", CharRoom);
+export const MChatRoom = mongoose.model<Document<IChatRoom>>("chatRoom", CharRoom);
